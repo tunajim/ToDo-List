@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToDo.ism</title>
+</head>
+<body>
+    <header id="header">
+        <button id="menu"></button>
+        <h1 id="logo">ToDo.ism</h1>
+    </header>
+    <div id="container">
+        <div id="sidebar">
+            <div id="sidebarHeader">
+                <h2 id="menuLabel">Menu</h2>
+            </div>
+            <div id="projects">
+                <div id="projectsLabelDiv">
+
+                    <h3 id="projectLabel">Projects</h3>
+                </div>
+            </div>
+        </div>
+        <div id="listContainer" class="active">
+            <div id="firstItem" class="itemDiv">
+                <div class="taskCompact">
+                    <input type="checkbox" class="checkbox">
+                    <h4 class="taskName">Do the dishes</h4>
+                    <h4 class="date">07/07/1995</h4>
+                </div>
+                <div class="taskExtended">
+                    <div class="projectLabelDiv">
+                        <h5 class="projectLabel">Project:</h5>
+                        <h5 class="projectName">Housework</h5>
+                    </div>
+                    <div class="noteDiv">
+                        <h5 class="noteLabel">Notes:</h5>
+                        <p class="notes">Dont forget to wash the dogs food bowl</p>
+                    </div>
+                </div>
+                <div class="buttonDiv">
+                    <button class="editEntry">Edit</button>
+                    <button class="deleteEntry">Delete</button>
+                </div>
+            </div>
+            <div id="firstItem" class="itemDiv">
+                <div class="taskCompact">
+                    <input type="checkbox" class="checkbox">
+                    <h4 class="taskName">Do the dishes</h4>
+                    <h4 class="date">07/07/1995</h4>
+                </div>
+                <!-- <div class="taskExtended">
+                    <div class="projectLabelDiv">
+                        <h5 class="projectLabel">Project:</h5>
+                        <h5 class="projectName">Housework</h5>
+                    </div>
+                    <div class="noteDiv">
+                        <h5 class="noteLabel">Notes:</h5>
+                        <p class="notes">Dont forget to wash the dogs food bowl</p>
+                    </div>
+                </div> -->
+            </div>
+
+        </div>
+
+    </div>
+   <script src="bundle.js"></script> 
+</body>
+</html>
