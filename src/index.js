@@ -1,7 +1,6 @@
 import './style.css';
-import Icon from './menuButton.png';
-import printMe from './print.js';
-import Carrot from './up-arrow.png';
+import {Icon} from './menuButton.png';
+import {Carrot} from './up-arrow.png';
 import {DOM_Factory, DOM_Task_Factory} from './DOM-Manager';
 import {ToDo_Item} from './ToDo_Object_Factory';
 
