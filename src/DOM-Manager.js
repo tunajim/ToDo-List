@@ -1,18 +1,22 @@
 import Carrot from './up-arrow.png';
+import { ToDo_Item } from './ToDo_Object_Factory';
+import { newToDo, taskFactory, doc, listenForExpand, callExpandProjects } from '.';
 
+
+/* get DOM elements */
 const DOM_Factory = () => {
     const sidebar = document.getElementById('sidebar');
     const projectsLabelDiv = document.getElementById('projectsLabelDiv');
     const menu = document.getElementById('menu');
     const taskContainer = document.getElementById('listContainer');
+    const addBtn = document.getElementById('addBtn');
     
     const carrot = document.createElement('img');
     carrot.id = "carrot";
     carrot.src = Carrot;
 
-    projectsLabelDiv.insertBefore(carrot, projectsLabelDiv.firstChild);
-
     const showMenu = (event) => {
+        
         if(sidebar.classList.contains('active')){
             sidebar.classList.remove('active');
             taskContainer.classList.remove('active');
@@ -23,14 +27,16 @@ const DOM_Factory = () => {
     }
 
     const expandProjectsMenu = (event) => {
-        if(carrot.classList.contains('active')){
-            carrot.classList.remove('active');
-        }else {
+        console.log(!carrot.classList.contains('active'));
+        (carrot.classList.contains('active')) ? carrot.classList.remove('active') :
             carrot.classList.add('active');
+        if(carrot.classList.contains('active')) {
+            newToDo.projectList.push(handleCarrotClicks.filterProjects(newToDo.ToDoList));
         }
     }
 
     return {
+        addBtn,
         sidebar,
         projectsLabelDiv,
         carrot,
@@ -41,6 +47,7 @@ const DOM_Factory = () => {
     }
 }
 
+/* create and append new DOM elements when user adds or edits task */
 const DOM_Task_Factory = () => {
     const newElement = tag => {
         let element;
@@ -48,69 +55,756 @@ const DOM_Task_Factory = () => {
         return element;
     }
 
-    const  itemDiv = newElement('div');
-    itemDiv.classList.add('itemDiv');
+    const markUrgent = (item, itemDiv) => {
+        console.log(item.urgent);
+        if(item.urgent == 'true') {
+            console.log('help');
+            itemDiv.classList.add('active');
+            itemDiv.style.backgroundColor = "salmon";
+        }else {
+            itemDiv.classList.remove('active');
+        }
+    }
 
-    const taskCompact = newElement('div');
-    taskCompact.classList.add('taskCompact');
+    const appendFilledTaskExtended = (arr, index, item) => {
+        console.log({item});
+        console.log(arr);
+        let taskFilledExtended = newElement('div');
+        taskFilledExtended.classList.add('taskExtended')
 
-    const checkbox = newElement('input');
-    checkbox.classList.add('checkbox');
-    checkbox.setAttribute('type', 'checkbox');
+        let projectLabelDiv = newElement('div');
+        projectLabelDiv.classList.add('projectLabelDiv');
 
-    const taskName = newElement('h4');
-    taskName.classList.add('taskName');
+        let projectLabel = newElement('h5');
+        projectLabel.classList.add('projectLabel');
+        projectLabel.textContent = "Project:"
 
-    const date = newElement('h4');
-    date.classList.add('date');
+        let projectName = newElement('h5');
+        projectName.classList.add('projectName');
+        projectName.textContent = `${arr.project}`;
 
-    const taskExtended = newElement('div');
-    taskExtended.classList.add('taskExtended');
+        let noteDiv = newElement('div');
+        noteDiv.classList.add('noteDiv');
 
-    const projectLabelDiv = newElement('div');
-    projectLabelDiv.classList.add('projectLabelDiv');
+        let noteLabel = newElement('h5');
+        noteLabel.classList.add('noteLabel');
+        noteLabel.textContent = 'Notes:'
+        
+        let notes = newElement('p');
+        notes.classList.add('notes');
+        notes.textContent = `${arr.notes}`
 
-    const projectLabel = newElement('h5');
-    projectLabel.classList.add('projecetLabel');
+        let buttonDiv = newElement('div');
+        buttonDiv.classList.add('buttonDiv');
 
-    const projectName = newElement('h5');
-    projectName.classList.add('projectName');
+        let editButton = newElement('button');
+        editButton.classList.add('editEntry');
+        editButton.textContent = 'Edit';
 
-    const noteDiv = newElement('div');
-    noteDiv.classList.add('noteDiv');
+        let deleteButton = newElement('button');
+        deleteButton.classList.add('deleteEntry');
+        deleteButton.textContent = 'Delete';
 
-    const noteLabel = newElement('h5');
-    noteLabel.classList.add('noteLabel');
+        projectLabelDiv.appendChild(projectLabel);
+        projectLabelDiv.appendChild(projectName);
+        taskFilledExtended.appendChild(projectLabelDiv);
+        noteDiv.appendChild(noteLabel);
+        noteDiv.appendChild(notes);
+        taskFilledExtended.appendChild(noteDiv);
+        buttonDiv.appendChild(editButton);
+        buttonDiv.appendChild(deleteButton);
+        taskFilledExtended.appendChild(buttonDiv);
+        item.appendChild(taskFilledExtended);
+        }
 
-    const notes = newElement('p');
-    notes.classList.add('notes');
+    const newItemForm = () => {
+        const ToDo = ToDo_Item();
 
-    const buttonDiv = newElement('div');
-    buttonDiv.classList.add('buttonDiv');
+        const  itemDiv = newElement('div');
+        itemDiv.classList.add('itemDiv');
 
-    const editBtn = newElement('button');
-    editBtn.classList.add('editEntry');
+        const itemForm = newElement('form');
+        itemForm.classList.add('itemDiv');
+        itemForm.setAttribute('action', '/');
+        itemForm.setAttribute('method', 'GET');
 
-    const deleteBtn = newElement('button');
-    deleteBtn.classList.add('deleteEntry');
+        const taskCompact = newElement('div');
+        taskCompact.classList.add('taskCompact');
 
-    return {
-        itemDiv,
-        taskCompact,
-        checkbox,
-        taskName,
-        date,
-        taskExtended,
-        projectLabelDiv,
-        projectLabel,
-        projectName,
-        noteDiv,
-        noteLabel,
-        notes,
-        buttonDiv,
-        editBtn,
-        deleteBtn,
+        const checkbox = newElement('input');
+        checkbox.classList.add('checkbox');
+        checkbox.id = 'urgent';
+        checkbox.setAttribute('type', 'checkbox');
+
+        const taskName = newElement('h4');
+        taskName.classList.add('taskName');
+
+        const date = newElement('h4');
+        date.classList.add('date');
+
+        const container = DOM_Factory();
+        
+
+        const taskExtended = newElement('div');
+        taskExtended.classList.add('taskExtended');
+
+        const projectLabelDiv = newElement('div');
+        projectLabelDiv.classList.add('projectLabelDiv');
+
+        const projectLabel = newElement('h5');
+        projectLabel.classList.add('projectLabel');
+        projectLabel.textContent = "Project: "
+
+        const projectName = newElement('h5');
+        projectName.classList.add('projectName');
+
+        const noteDiv = newElement('div');
+        noteDiv.classList.add('noteDiv');
+
+        const noteLabel = newElement('h5');
+        noteLabel.classList.add('noteLabel');
+        noteLabel.textContent = "Notes:";
+
+        const notes = newElement('p');
+        notes.classList.add('notes');
+
+        const buttonDiv = newElement('div');
+        buttonDiv.classList.add('buttonDiv');
+
+        const editBtn = newElement('button');
+        editBtn.classList.add('editEntry');
+        editBtn.textContent = "Edit";
+
+        const deleteBtn = newElement('button');
+        deleteBtn.classList.add('deleteEntry');
+        deleteBtn.textContent = "Delete";
+
+        const deleteFormBtn = newElement('button');
+        deleteFormBtn.id = "deleteBtn";
+        deleteFormBtn.textContent = "Delete";
+
+        const enterBtn = newElement('button');
+        enterBtn.classList.add('enterBtn');
+        enterBtn.id  = 'enter';
+        enterBtn.textContent = "Enter";
+        enterBtn.setAttribute('type', 'submit');
+
+        const taskInput = newElement('input');
+        taskInput.classList.add = "taskName";
+        taskInput.id = 'name';
+        taskInput.setAttribute('placeholder', 'Enter Task');
+        taskInput.setAttribute('name', 'name');
+        taskInput.setAttribute('type', 'text');
+        taskInput.required = true;
+
+        const dateInput = newElement('input');
+        dateInput.classList.add = "date";
+        dateInput.id = "date";
+        dateInput.setAttribute('placeholder', 'Enter Date: "yyyy-mm-dd"');
+        dateInput.setAttribute('name', 'date');
+        dateInput.setAttribute('type', 'date');
+        dateInput.required = true;
+
+        const projectInput = newElement('input');
+        projectInput.classList.add("projectName");
+        projectInput.id = "project";
+        projectInput.setAttribute('placeholder', 'Enter Project');
+        projectInput.setAttribute('name', 'project');
+        projectInput.setAttribute('type', 'text');
+        projectInput.required = true;
+
+        const noteInput = newElement('input');
+        noteInput.classList.add("notes");
+        noteInput.setAttribute('placeholder', 'Enter Notes');
+        noteInput.setAttribute('name', 'note');
+        noteInput.setAttribute('type', 'text');
+
+        const appendEmptyTaskCompact = () => {
+            taskCompact.appendChild(checkbox.cloneNode(true));
+            taskCompact.appendChild(taskInput.cloneNode(true));
+            taskCompact.appendChild(dateInput.cloneNode(true));
+            itemForm.appendChild(taskCompact.cloneNode(true));
+            itemForm.id = 'emptyForm';
+        }
+
+        const appendFilledTaskCompact = (item, index) => {
+            let filledItemDiv = newElement('div');
+            filledItemDiv.classList.add('itemDiv');
+            filledItemDiv.setAttribute('data-index', `${index}`);
+
+            let  taskCompactFilled = newElement('div');
+            taskCompactFilled.classList.add('taskCompact');
+
+            let taskCarrot = newElement('img');
+            taskCarrot.classList = 'taskCarrot';
+            taskCarrot.src = Carrot;
+
+            let filledTaskName = newElement('h4');
+            filledTaskName.classList.add('taskName');
+            filledTaskName.textContent = `${item.description}`;
+
+            let filledTaskDate = newElement('h4');
+            filledTaskDate.classList.add('date');
+            filledTaskDate.textContent = `${item.date}`;
+
+            markUrgent(item, filledItemDiv);
+
+            taskCompactFilled.appendChild(taskCarrot.cloneNode(true));
+            taskCompactFilled.appendChild(filledTaskName.cloneNode(true));
+            taskCompactFilled.appendChild(filledTaskDate.cloneNode(true));
+            filledItemDiv.appendChild(taskCompactFilled.cloneNode(true));
+
+            return filledItemDiv;
+        }
+
+        
+
+        const appendEmptyTaskExtended = () => {
+            projectLabelDiv.appendChild(projectLabel);
+            projectLabelDiv.appendChild(projectInput);
+            taskExtended.appendChild(projectLabelDiv);
+            noteDiv.appendChild(noteLabel);
+            noteDiv.appendChild(noteInput);
+            taskExtended.appendChild(noteDiv);
+            itemForm.appendChild(taskExtended);
+    
+
+        }
+
+        const appendEmptyButtons = () => {
+            buttonDiv.appendChild(enterBtn);
+            buttonDiv.appendChild(deleteFormBtn);
+            itemForm.appendChild(buttonDiv);
+        }
+
+        const appendEmptyItemForm = () => {
+            appendEmptyTaskCompact();
+            appendEmptyTaskExtended();
+            appendEmptyButtons();
+            container.taskContainer.appendChild(itemForm.cloneNode(true));
+            container.addBtn.removeEventListener('click', appendEmptyItemForm);
+            const validate = validateForm();
+            validate.run();
+        }
+
+        const appendFilledItemForm = (newToDo) => {
+            console.log(newToDo)
+            for(let i=0; i<newToDo.length; i++) {
+                container.taskContainer.appendChild(appendFilledTaskCompact(newToDo[i], i));
+                console.log(newToDo.ToDoList);
+            }
+        }
+
+        const appendNewItem = (item) => {
+            let index = item.ToDoList.length - 1;
+            container.taskContainer.appendChild(appendFilledTaskCompact(item.ToDoList[index], index));
+        }
+
+        return {
+            appendEmptyItemForm,
+            appendFilledItemForm,
+            appendNewItem, 
+            appendFilledTaskCompact,
+         }
+    }
+
+    
+return {
+        newItemForm,
+        markUrgent,
+        appendFilledTaskExtended,
     }
 }
 
-export {DOM_Factory, DOM_Task_Factory};
+const validateForm = () => {
+    const name = document.getElementById('name');
+    const date = document.getElementById('date');
+    const project = document.getElementById('project');
+    const form = document.getElementById('emptyForm');
+    const deleteFormBtn = document.getElementById('deleteBtn');
+    const checkbox = document.getElementById('urgent');
+    
+    let userEntries;
+    
+    const run = () => {
+        if(form !== null) form.addEventListener('submit', collect);
+        if(form !== null) form.addEventListener('submit', addExpandListener);
+        if(deleteFormBtn !== null) {
+            deleteFormBtn.addEventListener('click', function(e){
+                form.remove();
+                DOM_Factory().addBtn.addEventListener('click', DOM_Task_Factory().newItemForm().appendEmptyItemForm);
+            })
+        }
+    } 
+
+    function collect(e) {
+        const enter = document.getElementById('enter');
+        e.preventDefault();
+        let isUrgent = check(checkbox, e);
+        isUrgent;
+        userEntries = newToDo.newItem(`${e.target.name.value}`, `${e.target.date.value}`,
+            `${e.target.project.value}`, `${e.target.note.value}`, `${e.target.urgent.value}`);
+    
+        newToDo.ToDoList.push(userEntries);
+        localStorage.setItem('ToDo_List', JSON.stringify(newToDo.ToDoList));
+        form.remove();
+        taskFactory.newItemForm().appendNewItem(newToDo);
+        doc.addBtn.addEventListener('click', taskFactory.newItemForm().appendEmptyItemForm);
+    }
+
+    function check(checkbox, e) {
+        checkbox.checked === true ? e.target.urgent.value = true :
+            e.target.urgent.value = false;
+    }
+
+    const addExpandListener = (e) => {
+        console.log(e.target.parentNode);
+        console.log(newToDo.ToDoList.length - 1); 
+        listenForExpand.addListenerToNewItem();
+    }
+
+    return {
+        run,
+        form,
+    }
+    
+};
+
+const editTasks = () => {
+
+    const replaceNode = (e) => {
+        let index =  e.target.parentNode.parentNode.parentNode.dataset.index;
+        let clickedDiv = document.querySelectorAll(`[data-index = '${index}']`);
+
+        e.target.parentNode.parentNode.parentNode.after(_createEditForm(index));
+        e.target.parentNode.parentNode.parentNode.remove();
+        editTaskBtns().validateUserEdit(e);
+        editTaskBtns().createCancelBtnListener();
+    }
+
+    const _createEditForm = (index) => {
+        const taskEditingForm = document.createElement('form');
+        taskEditingForm.action = "/";
+        taskEditingForm.id = "editTaskForm"
+        if(newToDo.ToDoList[index].urgent !== 'false') taskEditingForm.style.backgroundColor = 'salmon';
+        taskEditingForm.classList.add('form', 'itemDiv');
+        taskEditingForm.setAttribute('data-index', index);
+
+        taskEditingForm.appendChild(_createTaskCompact(index));
+        taskEditingForm.appendChild(_createTaskExtended(index));
+        taskEditingForm.appendChild(_createButtonDiv(index));
+        return taskEditingForm;
+    }
+
+    const _createTaskCompact = (index) => {
+        const taskCompactEditor = document.createElement('div');
+        taskCompactEditor.classList.add('taskCompact')
+
+        taskCompactEditor.appendChild(_createCheckBoxInput(index));
+        taskCompactEditor.appendChild(_createTaskNameInput(index)); 
+        taskCompactEditor.appendChild(_createDateInput(index));
+        return taskCompactEditor;
+    }
+
+    const _createCheckBoxInput = (index) => {
+        const editFormCheckBox = document.createElement('input');
+        editFormCheckBox.type = 'checkbox'; 
+        editFormCheckBox.classList.add('checkbox');
+        editFormCheckBox.id = 'editCheckbox';
+        if(newToDo.ToDoList[index].urgent == 'true') {
+            editFormCheckBox.checked = true;
+        }else {
+            editFormCheckBox.checked = false;
+        } 
+        return editFormCheckBox;
+    }
+
+    const _createTaskNameInput = (index) => {
+        const taskNameInput = document.createElement('input');
+        taskNameInput.classList.add('taskName');
+        taskNameInput.id = 'taskNameEditor';
+        taskNameInput.placeholder = `${newToDo.ToDoList[index].description}`;
+        return taskNameInput;
+    }
+
+    const _createDateInput = (index) => {
+        const dateInput = document.createElement('input');
+        dateInput.classList.add('date');
+        dateInput.id = 'dateEditor';
+        dateInput.type = 'date';
+        dateInput.value = `${newToDo.ToDoList[index].date}`;
+        dateInput.placeholder = `"${newToDo.ToDoList[index].date}"`;
+        return dateInput;
+    }
+
+    const _createTaskExtended = (index) => {
+        const taskExtended = document.createElement('div');
+        taskExtended.classList.add('taskExtended');
+
+        taskExtended.appendChild(_createProjectDiv(index));
+        taskExtended.appendChild(_createNoteDiv(index));
+
+        return taskExtended;
+    }
+
+    const _createProjectDiv = (index) => {
+        const projectDiv = document.createElement('div');
+        projectDiv.classList.add('projectLabelDiv');
+
+        projectDiv.appendChild(_createProjectLabel(index));
+        projectDiv.appendChild(_createProjectInput(index));
+
+        return projectDiv;
+    }
+
+    const _createProjectLabel = (index) => {
+        const projectLabel = document.createElement('h5');
+        projectLabel.classList.add('projectLabel');
+        projectLabel.textContent = "Project:";
+
+        return projectLabel;
+    }
+
+    const _createProjectInput = (index) => {
+        const projectInput = document.createElement('input');
+        projectInput.classList.add('projectLabel');
+        projectInput.id = 'projectEditor';
+        projectInput.placeholder = `${newToDo.ToDoList[index].project}`;
+
+        return projectInput;
+    }
+
+    const _createNoteDiv = (index) => {
+        const noteDiv = document.createElement('div');
+        noteDiv.classList.add('noteDiv');
+
+        noteDiv.appendChild(_createNoteLabel(index));
+        noteDiv.appendChild(_createNoteInput(index));
+
+        return noteDiv;
+    }
+
+    const _createNoteLabel = (index) => {
+        const noteLabel = document.createElement('h5');
+        noteLabel.classList.add('noteLabel');
+        noteLabel.textContent = "Notes:";
+
+        return noteLabel;
+    }
+
+    const _createNoteInput = (index) => {
+        const noteInput = document.createElement('input');
+        noteInput.classList.add('notes');   
+        noteInput.id = 'noteEditor';
+        noteInput.placeholder = `${newToDo.ToDoList[index].notes}`;
+
+        return noteInput;
+    }
+
+    const _createButtonDiv = (index) => {
+        const buttonDiv = document.createElement('div');
+        buttonDiv.classList.add('buttonDiv');
+
+        buttonDiv.appendChild(_createEnterBtn(index));
+        buttonDiv.appendChild(_createCancelBtn(index));
+
+        return buttonDiv;
+    }
+
+    const _createEnterBtn = (index) => {
+        const enter = document.createElement('input');
+        enter.type = "submit";
+        enter.classList.add('enterBtn');
+        enter.textContent = "Enter";
+
+        return enter;
+    }
+
+    const _createCancelBtn = (index) => {
+        const cancelBtn = document.createElement('input');
+        cancelBtn.type = "button";
+        cancelBtn.value = "Cancel";
+        cancelBtn.name = "Cancel";
+        cancelBtn.classList.add('cancelBtn');
+        cancelBtn.textContent = "Cancel";
+
+        return cancelBtn;
+    }
+
+    return {
+        replaceNode,
+    }
+}
+
+const editTaskBtns = () => {
+    let _checkbox = document.getElementById('editCheckbox');
+    let _name = document.getElementById('taskNameEditor');
+    let _date = document.getElementById('dateEditor');
+    let _project = document.getElementById('projectEditor');
+    let _notes = document.getElementById('noteEditor');
+    let _form = document.getElementById('editTaskForm');
+
+    const createCancelBtnListener = () => {
+        let _allCancelBtns = document.getElementsByClassName('cancelBtn');
+        for(let i=0; i<_allCancelBtns.length; i++){
+            _allCancelBtns[i].addEventListener('click', _callCancel);
+        }
+    }
+
+    const _callCancel = (e) => {
+        console.log(e.target.parentNode.parentNode);
+        e.preventDefault();
+        _cancelEdit(e);
+    }
+
+    const _cancelEdit = (e) => {
+        console.log(e.target.parentNode.parentNode.dataset.index); 
+        let index = e.target.parentNode.parentNode.dataset.index;
+        e.target.parentNode.parentNode.after(DOM_Task_Factory()
+            .newItemForm().appendFilledTaskCompact(newToDo.ToDoList[index], index));
+        e.target.parentNode.parentNode.remove();
+        listenForExpand.resetCarrotListeners();
+    }
+
+    const validateUserEdit = () => {
+        const _submitEditBtns = document.getElementsByClassName('enterBtn');
+        for(let i=0; i<_submitEditBtns.length; i++){
+            _submitEditBtns[i].addEventListener('click', _callEditSubmit);
+        }
+        console.log(_submitEditBtns[0].parentNode.parentNode);
+    }
+
+    const _callEditSubmit = (e) => {
+        console.log('i love you');
+        return _submitUserEdit(e);
+    }
+
+    const _submitUserEdit = (e) => {
+        e.preventDefault();
+        let _index = e.target.parentNode.parentNode.dataset.index;
+        _checkForNullEdit(e, _index);
+        e.target.parentNode.parentNode.after(DOM_Task_Factory().newItemForm()
+            .appendFilledTaskCompact(newToDo.ToDoList[_index], _index));
+        e.target.parentNode.parentNode.remove();
+        localStorage.setItem('ToDo_List', JSON.stringify(newToDo.ToDoList));
+        listenForExpand.resetCarrotListeners();
+    }
+
+    const _checkForNullEdit = (e, index) => {
+        if(_name.value !== '') newToDo.ToDoList[index].description = _name.value;
+        if(_date.value !== '') newToDo.ToDoList[index].date = _date.value;
+        if(_project.value !== '') newToDo.ToDoList[index].project = _project.value;
+        if(_notes.value !== '') newToDo.ToDoList[index].notes = _notes.value;
+        (_checkbox.checked) ? newToDo.ToDoList[index].urgent = 'true' : newToDo.ToDoList[index].urgent = 'false';
+        console.log(newToDo.ToDoList[index]);
+        console.log(_project.value);
+        console.log(_notes.value);
+    }
+
+    return {
+        createCancelBtnListener,
+        validateUserEdit,
+    }
+}
+    
+const expandTasks = () => {
+    let _allCarrots = document.getElementsByClassName('taskCarrot');
+    let deleteTaskBtns = document.getElementsByClassName('deleteEntry');
+    let editTaskBtns = document.getElementsByClassName('editEntry');
+    let _allItems = document.getElementsByClassName('itemDiv');
+    const validate = validateForm();
+    
+    console.log(_allCarrots);
+
+    const deleteTask = (e) => {
+        console.log(e.target);
+        const containerDiv = e.target.parentNode.parentNode.parentNode;
+        containerDiv.remove();
+        newToDo.ToDoList.splice(containerDiv.dataset.index, 1);
+            
+        window.localStorage.setItem('ToDo_List', JSON.stringify(newToDo.ToDoList));
+        console.log(newToDo.ToDoList);
+        resetCarrotListeners();
+    }
+
+    const _remove = () => {
+        for(let i=0; i<_allCarrots.length; i++){
+            console.log(deleteTaskBtns);
+            console.log(newToDo.ToDoList);
+            for(let j=0; j<deleteTaskBtns.length; j++){
+                deleteTaskBtns[j].addEventListener('click', deleteTask);
+            }
+        }
+    }
+
+
+
+    const _edit = () => {
+        for(let i=0; i<_allCarrots.length; i++){
+            console.log(editTaskBtns);
+            for(let j=0; j<editTaskBtns.length; j++){
+                editTaskBtns[j].addEventListener('click', _callEdit);
+            }
+
+        }
+    }
+
+    const _callEdit = (e) => {
+        console.log(e.target);
+        _editTask(e);
+    }
+
+    const _editTask = (e) => {
+        editTasks().replaceNode(e);
+    }
+
+    const _shrink = (e) => {
+        console.log(e.target.parentNode.parentNode.lastChild);
+        e.target.parentNode.parentNode.lastChild.remove();
+    }
+
+    const _turnCarrot = (e) => {
+        console.log(e);
+        e.target.classList.contains('active') ? e.target.classList.remove('active') : e.target.classList.add('active');
+    }
+
+    const addListenerToNewItem = () => {
+        let i = (newToDo.ToDoList.length - 1);
+        _allCarrots[i].addEventListener('click', _callExpand)
+    }
+    
+    const resetCarrotListeners = () => {
+        let _allCarrotsDup = document.querySelectorAll('.taskCarrot');
+        console.log(_allCarrotsDup);
+        for(let i=0; i<_allCarrotsDup.length; i++){
+            console.log(_allCarrotsDup[i].parentNode.parentNode.getAttribute('data-index'));
+            _allCarrotsDup[i].parentNode.parentNode.dataset.index = '';
+            _allCarrotsDup[i].parentNode.parentNode.dataset.index = `${i}`;
+            _allCarrotsDup[i].removeEventListener('click', _callExpand);
+            console.log(_allCarrotsDup[i].parentNode.parentNode);
+            console.log({i});
+        }
+        listen();
+    }
+
+    const _callExpand = (e) => {
+        console.log(e.target.parentNode.parentNode.dataset.index);
+        return _expand(e, e.target.parentNode.parentNode.getAttribute('data-index'));
+    }
+
+    const _expand = (e, i) => {
+        let _selectTasks = document.querySelectorAll('.itemDiv');
+        if(!e.target.classList.contains('active')){
+            taskFactory.appendFilledTaskExtended(newToDo.ToDoList[i], i, _selectTasks[i]);
+            _turnCarrot(e);
+            _edit();
+            _remove();
+        }else {
+            _shrink(e);
+            _turnCarrot(e);
+        }
+    }
+
+    const listen = () => {
+        console.log(_allCarrots);
+        for(let i=0; i<_allCarrots.length; i++){
+            _allCarrots[i].addEventListener('click', _callExpand);
+        }
+    }
+    
+    return {
+        listen,
+        addListenerToNewItem,
+        resetCarrotListeners,
+    }
+        
+}
+
+const handleCarrotClicks = (() => {
+
+    const filterProjects = (list) => {
+        addProjectsToArray(list);
+        appendProjectsToSidebar(newToDo.projectList);
+        addListenerToProjectLabels();
+        doc.carrot.removeEventListener('click', callExpandProjects);
+        doc.carrot.addEventListener('click', callReduceProjects);
+    }
+
+    const addProjectsToArray = (list) => {
+        for(let i=0; i<list.length; i++){
+            if(!newToDo.projectList.includes(list[i].project)) {
+                if(list[i].project != null) newToDo.projectList.push(list[i].project);
+            }
+        }
+        console.log(newToDo.projectList);
+    }
+
+    const callReduceProjects = () => {
+        return reduceProjects();
+    }
+    
+    const reduceProjects = () => {
+        doc.expandProjectsMenu();
+        newToDo.projectList.splice(0, newToDo.projectList.length);
+        clearProjects();
+        doc.carrot.removeEventListener('click', callReduceProjects);
+        doc.carrot.addEventListener('click', callExpandProjects);
+        console.log(newToDo.projectList);
+    }
+
+    const clearProjects = () => {
+        const projectLabels = document.querySelectorAll('.projectFilterLabel');
+        console.log(projectLabels);
+        for(let i=0; i<projectLabels.length; i++){
+            projectLabels[i].remove();
+        }
+    }
+
+    const appendProjectsToSidebar = (list) => {
+        const sidebar = document.getElementById('sidebar');
+        for(let i=0; i<list.length; i++){
+            sidebar.append(createProjectLink(list[i])) 
+        }
+        console.log(sidebar);
+    }
+
+    const createProjectLink = (input) => {
+        const label = document.createElement('h5');
+        label.classList.add('projectFilterLabel');
+        label.textContent = input;
+        return label;
+    }
+
+    const addListenerToProjectLabels = () => {
+        const projectLabels = document.querySelectorAll('.projectFilterLabel');
+        for(let i=0; i<projectLabels.length; i++) {
+            projectLabels[i].addEventListener('click', callFilterToDos);
+        }
+    }
+
+    const callFilterToDos = (e) => {
+        return filter().filterToDos(e);
+    }
+
+    return {
+        filterProjects,
+    }
+})();
+
+const filter = () => {
+    const filterToDos = (e) => {
+        console.log(e.target.textContent);
+    }
+
+    return {
+        filterToDos,
+    }
+}
+
+
+
+export { DOM_Task_Factory, DOM_Factory, validateForm, expandTasks }
+
+
+
+            

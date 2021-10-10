@@ -1,7 +1,7 @@
 import './style.css';
 import {Icon} from './menuButton.png';
 import {Carrot} from './up-arrow.png';
-import {DOM_Factory, DOM_Task_Factory} from './DOM-Manager';
+import {DOM_Factory, DOM_Task_Factory, validateForm, expandTasks} from './DOM-Manager';
 import {ToDo_Item} from './ToDo_Object_Factory';
 
 console.log('hello');
@@ -12,9 +12,39 @@ console.log({div});
 
 const doc = DOM_Factory();
 
+
+
+doc.projectsLabelDiv.insertBefore(doc.carrot, doc.projectsLabelDiv.firstChild);
+
 doc.menu.addEventListener('click', doc.showMenu);
 
-doc.carrot.addEventListener('click', doc.expandProjectsMenu);
+const callExpandProjects = (e) => {
+    return doc.expandProjectsMenu();
+}
+doc.carrot.addEventListener('click', callExpandProjects);
+
+doc.addBtn.addEventListener('click', taskFactory.newItemForm().appendEmptyItemForm);
+
+
+const removeItem = node => {
+    console.log(node);
+    console.log(node.target.parentNode.parentNode);
+    node.target.parentNode.parentNode.remove();
+    if(node.target.parentNode.parentNode.id === 'emptyForm') {
+        doc.addBtn.addEventListener('click', taskFactory.newItemForm().appendEmptyItemForm);
+    }
+}
+
+const listenForDelete = () => {
+    const deleteBtn = document.getElementsByClassName('deleteEntry');
+    for(let i=0; i<deleteBtn.length; i++){
+        deleteBtn[i].addEventListener('click', removeItem);
+    }
+}
+
+listenForDelete();
+doc.addBtn.addEventListener('click', listenForDelete);
+
 
 const responsiveSidebar = (() => {
     const minSize = window.matchMedia("(min-width: 500px)");
@@ -40,4 +70,27 @@ const responsiveSidebar = (() => {
 
 window.onload = responsiveSidebar.sidebarMediaQuery(responsiveSidebar.minSize, responsiveSidebar.maxSize);
 
-const newItem = ToDo_Item();
+
+let newToDo = ToDo_Item();
+let addItem = newToDo.newItem('get groceries', '08/13/21', 'groceries', 'get milk, and eggs', 'true');
+let addAnotherItem = newToDo.newItem('clean room', '08/14/21', 'housework', 'room is dirty, clean it!', 'false');
+let addAnotherTestItem = newToDo.newItem('test', 'test', 'test', 'test');
+
+newToDo.ToDoList.push(addItem, addAnotherItem);
+
+window.addEventListener("load", taskFactory.newItemForm().appendFilledItemForm(JSON.parse(window.localStorage.getItem('ToDo_List'))));
+
+let testValidate = validateForm();
+testValidate.run();
+
+
+doc.addBtn.addEventListener('click', function(){
+    console.log(testValidate.form)})
+    
+const listenForExpand = expandTasks();
+listenForExpand.listen();
+
+console.log(JSON.parse(window.localStorage.getItem('ToDo_List')));
+newToDo.ToDoList = JSON.parse(localStorage.getItem('ToDo_List'));
+
+export {newToDo, taskFactory, doc, listenForExpand, callExpandProjects};
