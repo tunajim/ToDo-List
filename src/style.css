@@ -5,6 +5,7 @@
 body, html{
     margin: 0;
     padding: 0;
+    font-family: monospace;
 }
 
 *{
@@ -36,6 +37,7 @@ body {
     align-items: center;
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
     box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
 }
 
 #menu {
@@ -60,6 +62,42 @@ body {
     right: 0;
     margin-right: 1em;
 }
+
+#filterLabelDiv {
+    border-bottom: 1px solid black;
+    display: flex;
+    justify-content: center;
+    gap: 2em;
+}
+
+#filterLabel {
+    padding-top: 1em;
+    padding-bottom: 1em;
+    font-size: 1.2em;
+    font-weight: bolder;
+}
+
+#removeFilterContainer {
+    display: flex;
+    gap: .5em;
+}
+
+#removeFilter {
+    align-content: center;
+    align-items: center;
+    margin-top: auto;
+    margin-bottom: auto;
+    font-size: 20px;
+    border: 1px solid black;
+    border-radius: 10%;
+    padding: 0 10px 0 10px;
+    cursor: pointer;    
+}
+
+#removeFilterLabel {
+    opacity: 80%;
+}
+
 
 /*---------------------
     sidebar 
@@ -98,7 +136,6 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
 }
 
 
@@ -111,12 +148,15 @@ body {
     justify-content: center;
 }
 
+#projectLinkDiv {
+    display: flex;
+    flex-direction: column;
+    gap: .5em;
+}
+
 .projectFilterLabel {
-    padding: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0;
+    font-size: 1em;
 }
 
 .projectFilterLabel:hover {
@@ -180,6 +220,9 @@ body {
 .form {
     
 }
+h4{
+    font-size: 1.2em;
+}
 
 .taskCompact {
     display: flex;
@@ -212,7 +255,6 @@ body {
 
 .projectLabelDiv {
     display: flex;
-    justify-content: space-between;
     height: 20px;
     gap: 1em;
     align-items: center;
@@ -224,7 +266,8 @@ body {
 
 .projectName {
     margin-right: 1em;
-    width: 60%;
+    font-size: 1.2em;
+    font-weight: unset;
 }
 
 .taskExtended {
@@ -238,7 +281,7 @@ body {
 .noteDiv {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    /* justify-content: space-between; */
     gap: 1em;
     height: 20px;
 }
@@ -250,7 +293,7 @@ body {
 .notes {
     display: flex; 
     margin-right: 1em;
-    width: 60%;
+    font-size: 1.2em;
 }
 
 @media (min-width: 380px) {

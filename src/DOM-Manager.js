@@ -27,7 +27,6 @@ const DOM_Factory = () => {
     }
 
     const expandProjectsMenu = (event) => {
-        console.log(!carrot.classList.contains('active'));
         (carrot.classList.contains('active')) ? carrot.classList.remove('active') :
             carrot.classList.add('active');
         if(carrot.classList.contains('active')) {
@@ -56,9 +55,7 @@ const DOM_Task_Factory = () => {
     }
 
     const markUrgent = (item, itemDiv) => {
-        console.log(item.urgent);
         if(item.urgent == 'true') {
-            console.log('help');
             itemDiv.classList.add('active');
             itemDiv.style.backgroundColor = "salmon";
         }else {
@@ -67,8 +64,6 @@ const DOM_Task_Factory = () => {
     }
 
     const appendFilledTaskExtended = (arr, index, item) => {
-        console.log({item});
-        console.log(arr);
         let taskFilledExtended = newElement('div');
         taskFilledExtended.classList.add('taskExtended')
 
@@ -288,10 +283,8 @@ const DOM_Task_Factory = () => {
         }
 
         const appendFilledItemForm = (newToDo) => {
-            console.log(newToDo)
             for(let i=0; i<newToDo.length; i++) {
                 container.taskContainer.appendChild(appendFilledTaskCompact(newToDo[i], i));
-                console.log(newToDo.ToDoList);
             }
         }
 
@@ -358,9 +351,7 @@ const validateForm = () => {
     }
 
     const addExpandListener = (e) => {
-        console.log(e.target.parentNode);
-        console.log(newToDo.ToDoList.length - 1); 
-        listenForExpand.addListenerToNewItem();
+        listenForExpand.addListenerToNewItem(newToDo.ToDoList);
     }
 
     return {
@@ -371,6 +362,7 @@ const validateForm = () => {
 };
 
 const editTasks = () => {
+    let filtered = document.querySelector('#filterLabel');
 
     const replaceNode = (e) => {
         let index =  e.target.parentNode.parentNode.parentNode.dataset.index;
@@ -386,7 +378,7 @@ const editTasks = () => {
         const taskEditingForm = document.createElement('form');
         taskEditingForm.action = "/";
         taskEditingForm.id = "editTaskForm"
-        if(newToDo.ToDoList[index].urgent !== 'false') taskEditingForm.style.backgroundColor = 'salmon';
+        if(checkIfFiltered(filtered, index).urgent !== 'false') taskEditingForm.style.backgroundColor = 'salmon';
         taskEditingForm.classList.add('form', 'itemDiv');
         taskEditingForm.setAttribute('data-index', index);
 
@@ -411,7 +403,8 @@ const editTasks = () => {
         editFormCheckBox.type = 'checkbox'; 
         editFormCheckBox.classList.add('checkbox');
         editFormCheckBox.id = 'editCheckbox';
-        if(newToDo.ToDoList[index].urgent == 'true') {
+        
+        if(checkIfFiltered(filtered, index).urgent == 'true') {
             editFormCheckBox.checked = true;
         }else {
             editFormCheckBox.checked = false;
@@ -423,7 +416,7 @@ const editTasks = () => {
         const taskNameInput = document.createElement('input');
         taskNameInput.classList.add('taskName');
         taskNameInput.id = 'taskNameEditor';
-        taskNameInput.placeholder = `${newToDo.ToDoList[index].description}`;
+        taskNameInput.placeholder = `${checkIfFiltered(filtered, index).description}`;
         return taskNameInput;
     }
 
@@ -432,8 +425,8 @@ const editTasks = () => {
         dateInput.classList.add('date');
         dateInput.id = 'dateEditor';
         dateInput.type = 'date';
-        dateInput.value = `${newToDo.ToDoList[index].date}`;
-        dateInput.placeholder = `"${newToDo.ToDoList[index].date}"`;
+        dateInput.value = `${checkIfFiltered(filtered, index).date}`;
+        dateInput.placeholder = `"${checkIfFiltered(filtered, index).date}"`;
         return dateInput;
     }
 
@@ -469,7 +462,7 @@ const editTasks = () => {
         const projectInput = document.createElement('input');
         projectInput.classList.add('projectLabel');
         projectInput.id = 'projectEditor';
-        projectInput.placeholder = `${newToDo.ToDoList[index].project}`;
+        projectInput.placeholder = `${checkIfFiltered(filtered, index).project}`;
 
         return projectInput;
     }
@@ -496,7 +489,7 @@ const editTasks = () => {
         const noteInput = document.createElement('input');
         noteInput.classList.add('notes');   
         noteInput.id = 'noteEditor';
-        noteInput.placeholder = `${newToDo.ToDoList[index].notes}`;
+        noteInput.placeholder = `${checkIfFiltered(filtered, index).notes}`;
 
         return noteInput;
     }
@@ -531,8 +524,17 @@ const editTasks = () => {
         return cancelBtn;
     }
 
+    const checkIfFiltered = (filtered, index) => {
+        if(filtered.innerText === "Project : All") {
+            return newToDo.ToDoList[index];
+        }else {
+            return newToDo.filteredList[index];
+        }
+    }
+
     return {
         replaceNode,
+        checkIfFiltered,
     }
 }
 
@@ -543,6 +545,7 @@ const editTaskBtns = () => {
     let _project = document.getElementById('projectEditor');
     let _notes = document.getElementById('noteEditor');
     let _form = document.getElementById('editTaskForm');
+    let _filtered =  document.querySelector('#filterLabel');
 
     const createCancelBtnListener = () => {
         let _allCancelBtns = document.getElementsByClassName('cancelBtn');
@@ -552,18 +555,24 @@ const editTaskBtns = () => {
     }
 
     const _callCancel = (e) => {
-        console.log(e.target.parentNode.parentNode);
         e.preventDefault();
         _cancelEdit(e);
     }
 
     const _cancelEdit = (e) => {
-        console.log(e.target.parentNode.parentNode.dataset.index); 
         let index = e.target.parentNode.parentNode.dataset.index;
         e.target.parentNode.parentNode.after(DOM_Task_Factory()
-            .newItemForm().appendFilledTaskCompact(newToDo.ToDoList[index], index));
+            .newItemForm().appendFilledTaskCompact(editTasks().checkIfFiltered(_filtered, index), index));
         e.target.parentNode.parentNode.remove();
         listenForExpand.resetCarrotListeners();
+    }
+    
+    const checkIfFiltered = (filtered, index) => {
+        if(filtered.innerText === "Project : All") {
+            return newToDo.ToDoList[index]; 
+        }else {
+            return newToDo.filteredList[index];
+        }
     }
 
     const validateUserEdit = () => {
@@ -571,34 +580,63 @@ const editTaskBtns = () => {
         for(let i=0; i<_submitEditBtns.length; i++){
             _submitEditBtns[i].addEventListener('click', _callEditSubmit);
         }
-        console.log(_submitEditBtns[0].parentNode.parentNode);
     }
 
     const _callEditSubmit = (e) => {
-        console.log('i love you');
         return _submitUserEdit(e);
     }
 
     const _submitUserEdit = (e) => {
         e.preventDefault();
         let _index = e.target.parentNode.parentNode.dataset.index;
+        let _filtered = document.querySelector('#filterLabel');
         _checkForNullEdit(e, _index);
         e.target.parentNode.parentNode.after(DOM_Task_Factory().newItemForm()
-            .appendFilledTaskCompact(newToDo.ToDoList[_index], _index));
+            .appendFilledTaskCompact(checkIfFiltered(_filtered, _index), _index));
         e.target.parentNode.parentNode.remove();
         localStorage.setItem('ToDo_List', JSON.stringify(newToDo.ToDoList));
         listenForExpand.resetCarrotListeners();
     }
 
     const _checkForNullEdit = (e, index) => {
-        if(_name.value !== '') newToDo.ToDoList[index].description = _name.value;
-        if(_date.value !== '') newToDo.ToDoList[index].date = _date.value;
-        if(_project.value !== '') newToDo.ToDoList[index].project = _project.value;
-        if(_notes.value !== '') newToDo.ToDoList[index].notes = _notes.value;
-        (_checkbox.checked) ? newToDo.ToDoList[index].urgent = 'true' : newToDo.ToDoList[index].urgent = 'false';
-        console.log(newToDo.ToDoList[index]);
-        console.log(_project.value);
-        console.log(_notes.value);
+        let ToDoListIndex = checkIndex(e);
+        console.log(checkIndex(e));
+        console.log(newToDo.filteredList[index]);
+        if(_name.value !== '') {
+            newToDo.ToDoList[ToDoListIndex].description = _name.value;
+            if(_filtered.innerText !== "Project : All") newToDo.filteredList[index].description = _name.value;
+        }
+        if(_date.value !== '') {
+            newToDo.ToDoList[ToDoListIndex].date = _date.value;
+            if(_filtered.innerText !== "Project : All") newToDo.filteredList[index].date = _date.value;
+        }
+        if(_project.value !== '') {
+            newToDo.ToDoList[ToDoListIndex].project = _project.value;
+            if(_filtered.innerText !== "Project : All") newToDo.filteredList[index].project = _project.value;
+        }
+        if(_notes.value !== '') {
+            newToDo.ToDoList[ToDoListIndex].notes = _notes.value;
+            if(_filtered.innerText !== "Project : All") newToDo.filteredList[index].notes = _notes.value;
+        }
+        if(_checkbox.checked) {
+            newToDo.ToDoList[ToDoListIndex].urgent = 'true';
+            if(_filtered.innerText !== "Project : All") newToDo.filteredList[index].urgent = 'true'; 
+        }else {
+            newToDo.ToDoList[ToDoListIndex].urgent = 'false';
+            if(_filtered.innerText !== "Project : All") newToDo.filteredList[index].urgent = 'false';
+        } 
+    }
+
+    const checkIndex = (e) => {
+        //=================================================
+        let _filtered = document.querySelector('#filterLabel');
+        let _index = e.target.parentNode.parentNode.dataset.index;
+        for(let i=0; i<newToDo.ToDoList.length; i++){
+            if(checkIfFiltered(_filtered, _index).description 
+                === newToDo.ToDoList[i].description){
+                    return i;
+            }
+        }
     }
 
     return {
@@ -613,89 +651,36 @@ const expandTasks = () => {
     let editTaskBtns = document.getElementsByClassName('editEntry');
     let _allItems = document.getElementsByClassName('itemDiv');
     const validate = validateForm();
-    
-    console.log(_allCarrots);
 
-    const deleteTask = (e) => {
-        console.log(e.target);
-        const containerDiv = e.target.parentNode.parentNode.parentNode;
-        containerDiv.remove();
-        newToDo.ToDoList.splice(containerDiv.dataset.index, 1);
-            
-        window.localStorage.setItem('ToDo_List', JSON.stringify(newToDo.ToDoList));
-        console.log(newToDo.ToDoList);
-        resetCarrotListeners();
-    }
-
-    const _remove = () => {
-        for(let i=0; i<_allCarrots.length; i++){
-            console.log(deleteTaskBtns);
-            console.log(newToDo.ToDoList);
-            for(let j=0; j<deleteTaskBtns.length; j++){
-                deleteTaskBtns[j].addEventListener('click', deleteTask);
-            }
-        }
-    }
-
-
-
-    const _edit = () => {
-        for(let i=0; i<_allCarrots.length; i++){
-            console.log(editTaskBtns);
-            for(let j=0; j<editTaskBtns.length; j++){
-                editTaskBtns[j].addEventListener('click', _callEdit);
-            }
-
-        }
-    }
-
-    const _callEdit = (e) => {
-        console.log(e.target);
-        _editTask(e);
-    }
-
-    const _editTask = (e) => {
-        editTasks().replaceNode(e);
-    }
-
-    const _shrink = (e) => {
-        console.log(e.target.parentNode.parentNode.lastChild);
-        e.target.parentNode.parentNode.lastChild.remove();
-    }
-
-    const _turnCarrot = (e) => {
-        console.log(e);
-        e.target.classList.contains('active') ? e.target.classList.remove('active') : e.target.classList.add('active');
-    }
-
-    const addListenerToNewItem = () => {
-        let i = (newToDo.ToDoList.length - 1);
-        _allCarrots[i].addEventListener('click', _callExpand)
+    const addListenerToNewItem = (list) => {
+        let i = (list.length - 1);
+        _allCarrots[i].addEventListener('click', _callExpand);
     }
     
     const resetCarrotListeners = () => {
         let _allCarrotsDup = document.querySelectorAll('.taskCarrot');
         console.log(_allCarrotsDup);
-        for(let i=0; i<_allCarrotsDup.length; i++){
-            console.log(_allCarrotsDup[i].parentNode.parentNode.getAttribute('data-index'));
-            _allCarrotsDup[i].parentNode.parentNode.dataset.index = '';
-            _allCarrotsDup[i].parentNode.parentNode.dataset.index = `${i}`;
-            _allCarrotsDup[i].removeEventListener('click', _callExpand);
-            console.log(_allCarrotsDup[i].parentNode.parentNode);
-            console.log({i});
-        }
-        listen();
+        for(let i=0; i<_allCarrotsDup.length; i++) _resetCarrotNodes(_allCarrotsDup, i);
+        listen(_allCarrotsDup);
+    }
+
+    const _resetCarrotNodes = (carrots, i) => {
+        carrots[i].parentNode.parentNode.dataset.index = '';
+        carrots[i].parentNode.parentNode.dataset.index = `${i}`;
+        carrots[i].removeEventListener('click', _callExpand);
+
     }
 
     const _callExpand = (e) => {
-        console.log(e.target.parentNode.parentNode.dataset.index);
         return _expand(e, e.target.parentNode.parentNode.getAttribute('data-index'));
     }
 
     const _expand = (e, i) => {
         let _selectTasks = document.querySelectorAll('.itemDiv');
+        let _filter = document.querySelector('#filterLabel');
+        let _allProjects = "Project : All";
         if(!e.target.classList.contains('active')){
-            taskFactory.appendFilledTaskExtended(newToDo.ToDoList[i], i, _selectTasks[i]);
+            _checkForFilter(_allProjects, _selectTasks, _filter, i);
             _turnCarrot(e);
             _edit();
             _remove();
@@ -705,10 +690,64 @@ const expandTasks = () => {
         }
     }
 
-    const listen = () => {
-        console.log(_allCarrots);
+    const _checkForFilter = (allProjects, selectTasks, filter, i) => {
+        if(filter.innerText == allProjects) {
+            taskFactory.appendFilledTaskExtended(newToDo.ToDoList[i], i, selectTasks[i]);
+        }else {
+            taskFactory.appendFilledTaskExtended(newToDo.filteredList[i], i, selectTasks[i]);
+        }
+
+    }
+
+    const _edit = () => {
         for(let i=0; i<_allCarrots.length; i++){
-            _allCarrots[i].addEventListener('click', _callExpand);
+            for(let j=0; j<editTaskBtns.length; j++){
+                editTaskBtns[j].addEventListener('click', _callEdit);
+            }
+
+        }
+    }
+
+    const _callEdit = (e) => {
+        _editTask(e);
+    }
+
+    const _editTask = (e) => {
+        editTasks().replaceNode(e);
+    }
+
+   const _remove = () => {
+        for(let i=0; i<_allCarrots.length; i++){
+            for(let j=0; j<deleteTaskBtns.length; j++){
+                deleteTaskBtns[j].addEventListener('click', deleteTask);
+            }
+        }
+    }
+
+    const deleteTask = (e) => {
+        const containerDiv = e.target.parentNode.parentNode.parentNode;
+        containerDiv.remove();
+        newToDo.ToDoList.splice(containerDiv.dataset.index, 1);
+        newToDo.filteredList.splice(containerDiv.dataset.index, 1);
+            
+        window.localStorage.setItem('ToDo_List', JSON.stringify(newToDo.ToDoList));
+        resetCarrotListeners();
+    }
+
+    const _shrink = (e) => {
+        e.target.parentNode.parentNode.lastChild.remove();
+    }
+
+    const _turnCarrot = (e) => {
+        e.target.classList.contains('active') ? e.target.classList.remove('active') : e.target.classList.add('active');
+    }
+
+
+
+    const listen = (carrots) => {
+        console.log(carrots);
+        for(let i=0; i<carrots.length; i++){
+            carrots[i].addEventListener('click', _callExpand);
         }
     }
     
@@ -733,10 +772,11 @@ const handleCarrotClicks = (() => {
     const addProjectsToArray = (list) => {
         for(let i=0; i<list.length; i++){
             if(!newToDo.projectList.includes(list[i].project)) {
-                if(list[i].project != null) newToDo.projectList.push(list[i].project);
+                if(list[i].project != null) {
+                    newToDo.projectList.push(list[i].project);
+                }
             }
         }
-        console.log(newToDo.projectList);
     }
 
     const callReduceProjects = () => {
@@ -749,12 +789,10 @@ const handleCarrotClicks = (() => {
         clearProjects();
         doc.carrot.removeEventListener('click', callReduceProjects);
         doc.carrot.addEventListener('click', callExpandProjects);
-        console.log(newToDo.projectList);
     }
 
     const clearProjects = () => {
         const projectLabels = document.querySelectorAll('.projectFilterLabel');
-        console.log(projectLabels);
         for(let i=0; i<projectLabels.length; i++){
             projectLabels[i].remove();
         }
@@ -762,10 +800,12 @@ const handleCarrotClicks = (() => {
 
     const appendProjectsToSidebar = (list) => {
         const sidebar = document.getElementById('sidebar');
+        const projectLinkDiv = document.createElement('div');
+        projectLinkDiv.id = "projectLinkDiv";
         for(let i=0; i<list.length; i++){
-            sidebar.append(createProjectLink(list[i])) 
+            projectLinkDiv.appendChild(createProjectLink(list[i])); 
         }
-        console.log(sidebar);
+        sidebar.append(projectLinkDiv);
     }
 
     const createProjectLink = (input) => {
@@ -792,8 +832,84 @@ const handleCarrotClicks = (() => {
 })();
 
 const filter = () => {
+    let filterLabel = document.querySelector('#filterLabel');
+    const container = document.querySelector('#listContainer');
+
+    const createRemoveFilterBtn = (() => {
+        const removeFilterContainer = document.createElement('div');
+        removeFilterContainer.id = "removeFilterContainer";
+
+        const filterCancelBtn = document.createElement('div');
+        filterCancelBtn.id = "removeFilter";
+        filterCancelBtn.textContent = "-";
+
+        const removeFilterLabel = document.createElement('p');
+        removeFilterLabel.id = "removeFilterLabel";
+        removeFilterLabel.textContent = "remove filter";
+
+        return {
+            removeFilterContainer,
+            filterCancelBtn,
+            removeFilterLabel,
+        }
+    })();
+    
     const filterToDos = (e) => {
-        console.log(e.target.textContent);
+        newToDo.filteredList = newToDo.ToDoList.reduce((a, current, i) => 
+            (current.project === e.target.textContent) ? a.concat(current) : a, []);
+        if(filterLabel.innerText == "Project : All") _appendRemoveFilterBtn();
+        filterLabel.textContent = `Project : ${e.target.textContent}`;
+        _applyFilter(newToDo.filteredList, e);
+        _createFilteredCarrotListeners();
+    }
+
+    const _appendRemoveFilterBtn = () => {
+        let filterLabelDiv = document.querySelector("#filterLabelDiv");
+        createRemoveFilterBtn.removeFilterContainer.appendChild(createRemoveFilterBtn.filterCancelBtn);
+        createRemoveFilterBtn.removeFilterContainer.appendChild(createRemoveFilterBtn.removeFilterLabel);
+        filterLabelDiv.appendChild(createRemoveFilterBtn.removeFilterContainer);
+        _addRemoveFilterListener();
+    }
+
+    const _addRemoveFilterListener = () => {
+        createRemoveFilterBtn.filterCancelBtn.addEventListener('click', _callRemoveFilter);
+    }
+
+    const _callRemoveFilter = (e) => {
+        return removeFilter(e, filterLabel);
+    }
+
+    const _applyFilter = (list, e) => {
+        const tasks = document.querySelectorAll('.itemDiv');
+        _removeUnfilteredTasks(tasks);        
+        _appendFilteredTasks(list, container);
+    }
+
+    const _removeUnfilteredTasks = (tasks) => {
+        for(let i=0; i<tasks.length; i++) tasks[i].remove();
+    }
+
+    const _appendFilteredTasks = (list, container) => {
+        for(let i=0; i<list.length; i++){
+            container.appendChild(taskFactory.newItemForm().appendFilledTaskCompact(list[i], i));
+        }
+    }
+
+    const _createFilteredCarrotListeners = () => {
+        listenForExpand.resetCarrotListeners();
+    }
+
+    const removeFilter = (e, label) => {
+        label.innerText = "Project : All";
+        const _tasks = document.querySelectorAll('.itemDiv');
+        e.target.parentNode.remove();
+        for(let i=0; i<_tasks.length; i++) _tasks[i].remove();
+        for(let i=0; i<newToDo.ToDoList.length; i++){
+            container.appendChild(taskFactory.newItemForm()
+            .appendFilledTaskCompact(newToDo.ToDoList[i], i));
+        }
+        let carrots = document.querySelectorAll('.taskCarrot');
+        listenForExpand.listen(carrots);
     }
 
     return {

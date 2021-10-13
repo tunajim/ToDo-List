@@ -12,6 +12,8 @@ console.log({div});
 
 const doc = DOM_Factory();
 
+const listenForExpand = expandTasks();
+
 
 
 doc.projectsLabelDiv.insertBefore(doc.carrot, doc.projectsLabelDiv.firstChild);
@@ -86,9 +88,9 @@ testValidate.run();
 
 doc.addBtn.addEventListener('click', function(){
     console.log(testValidate.form)})
-    
-const listenForExpand = expandTasks();
-listenForExpand.listen();
+
+let allCarrots = document.querySelectorAll('.taskCarrot');
+listenForExpand.listen(allCarrots);
 
 console.log(JSON.parse(window.localStorage.getItem('ToDo_List')));
 newToDo.ToDoList = JSON.parse(localStorage.getItem('ToDo_List'));

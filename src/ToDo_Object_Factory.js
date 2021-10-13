@@ -2,6 +2,7 @@ const ToDo_Item = () => {
     const test = console.log('works');
     const ToDoList = [];
     const projectList = [];
+    const filteredList = [];
 
     const newItem = (description , date, project, notes, urgent) =>{
         return {
@@ -22,6 +23,7 @@ const ToDo_Item = () => {
         test,
         ToDoList,
         projectList,
+        filteredList,
         newItem,
     }
 }
