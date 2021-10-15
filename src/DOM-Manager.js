@@ -67,6 +67,12 @@ const DOM_Task_Factory = () => {
         let taskFilledExtended = newElement('div');
         taskFilledExtended.classList.add('taskExtended')
 
+        let labels = newElement('div');
+        labels.classList.add('labelDiv');
+
+        let info = newElement('div');
+        info.classList.add('infoDiv');
+
         let projectLabelDiv = newElement('div');
         projectLabelDiv.classList.add('projectLabelDiv');
 
@@ -74,7 +80,7 @@ const DOM_Task_Factory = () => {
         projectLabel.classList.add('projectLabel');
         projectLabel.textContent = "Project:"
 
-        let projectName = newElement('h5');
+        let projectName = newElement('p');
         projectName.classList.add('projectName');
         projectName.textContent = `${arr.project}`;
 
@@ -100,12 +106,12 @@ const DOM_Task_Factory = () => {
         deleteButton.classList.add('deleteEntry');
         deleteButton.textContent = 'Delete';
 
-        projectLabelDiv.appendChild(projectLabel);
-        projectLabelDiv.appendChild(projectName);
-        taskFilledExtended.appendChild(projectLabelDiv);
-        noteDiv.appendChild(noteLabel);
-        noteDiv.appendChild(notes);
-        taskFilledExtended.appendChild(noteDiv);
+        labels.appendChild(projectLabel);
+        labels.appendChild(noteLabel);
+        info.appendChild(projectName);
+        info.appendChild(notes);
+        taskFilledExtended.appendChild(labels);
+        taskFilledExtended.appendChild(info);
         buttonDiv.appendChild(editButton);
         buttonDiv.appendChild(deleteButton);
         taskFilledExtended.appendChild(buttonDiv);
@@ -143,8 +149,11 @@ const DOM_Task_Factory = () => {
         const taskExtended = newElement('div');
         taskExtended.classList.add('taskExtended');
 
-        const projectLabelDiv = newElement('div');
-        projectLabelDiv.classList.add('projectLabelDiv');
+        const taskExtendedLabels = newElement('div');
+        taskExtendedLabels.classList.add('labelDiv');
+
+        const taskExtendedInputs = newElement('div');
+        taskExtendedInputs.classList.add('infoDiv');
 
         const projectLabel = newElement('h5');
         projectLabel.classList.add('projectLabel');
@@ -153,8 +162,6 @@ const DOM_Task_Factory = () => {
         const projectName = newElement('h5');
         projectName.classList.add('projectName');
 
-        const noteDiv = newElement('div');
-        noteDiv.classList.add('noteDiv');
 
         const noteLabel = newElement('h5');
         noteLabel.classList.add('noteLabel');
@@ -255,12 +262,17 @@ const DOM_Task_Factory = () => {
         
 
         const appendEmptyTaskExtended = () => {
-            projectLabelDiv.appendChild(projectLabel);
-            projectLabelDiv.appendChild(projectInput);
-            taskExtended.appendChild(projectLabelDiv);
-            noteDiv.appendChild(noteLabel);
-            noteDiv.appendChild(noteInput);
-            taskExtended.appendChild(noteDiv);
+            taskExtendedLabels.appendChild(projectLabel);
+            taskExtendedLabels.appendChild(noteLabel);
+            taskExtendedInputs.appendChild(projectInput);
+            taskExtendedInputs.appendChild(noteInput);
+            // projectLabelDiv.appendChild(projectLabel);
+            // projectLabelDiv.appendChild(projectInput);
+            // taskExtended.appendChild(projectLabelDiv);
+            // noteDiv.appendChild(noteLabel);
+            // noteDiv.appendChild(noteInput);
+            taskExtended.appendChild(taskExtendedLabels);
+            taskExtended.appendChild(taskExtendedInputs);
             itemForm.appendChild(taskExtended);
     
 
@@ -434,18 +446,18 @@ const editTasks = () => {
         const taskExtended = document.createElement('div');
         taskExtended.classList.add('taskExtended');
 
-        taskExtended.appendChild(_createProjectDiv(index));
-        taskExtended.appendChild(_createNoteDiv(index));
+        taskExtended.appendChild(_createLabelDiv(index));
+        taskExtended.appendChild(_createInputDiv(index));
 
         return taskExtended;
     }
 
-    const _createProjectDiv = (index) => {
+    const _createLabelDiv = (index) => {
         const projectDiv = document.createElement('div');
-        projectDiv.classList.add('projectLabelDiv');
+        projectDiv.classList.add('labelDiv');
 
         projectDiv.appendChild(_createProjectLabel(index));
-        projectDiv.appendChild(_createProjectInput(index));
+        projectDiv.appendChild(_createNoteLabel(index));
 
         return projectDiv;
     }
@@ -458,25 +470,6 @@ const editTasks = () => {
         return projectLabel;
     }
 
-    const _createProjectInput = (index) => {
-        const projectInput = document.createElement('input');
-        projectInput.classList.add('projectLabel');
-        projectInput.id = 'projectEditor';
-        projectInput.placeholder = `${checkIfFiltered(filtered, index).project}`;
-
-        return projectInput;
-    }
-
-    const _createNoteDiv = (index) => {
-        const noteDiv = document.createElement('div');
-        noteDiv.classList.add('noteDiv');
-
-        noteDiv.appendChild(_createNoteLabel(index));
-        noteDiv.appendChild(_createNoteInput(index));
-
-        return noteDiv;
-    }
-
     const _createNoteLabel = (index) => {
         const noteLabel = document.createElement('h5');
         noteLabel.classList.add('noteLabel');
@@ -484,6 +477,25 @@ const editTasks = () => {
 
         return noteLabel;
     }
+
+    const _createInputDiv = (index) => {
+        const inputDiv = document.createElement('div');
+        inputDiv.classList.add('infoDiv');
+
+        inputDiv.appendChild(_createProjectInput(index));
+        inputDiv.appendChild(_createNoteInput(index));
+
+        return inputDiv;
+    }
+
+     const _createProjectInput = (index) => {
+        const projectInput = document.createElement('input');
+        projectInput.classList.add('projectLabel');
+        projectInput.id = 'projectEditor';
+        projectInput.placeholder = `${checkIfFiltered(filtered, index).project}`;
+
+        return projectInput;
+    }   
 
     const _createNoteInput = (index) => {
         const noteInput = document.createElement('input');

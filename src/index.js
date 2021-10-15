@@ -74,11 +74,6 @@ window.onload = responsiveSidebar.sidebarMediaQuery(responsiveSidebar.minSize, r
 
 
 let newToDo = ToDo_Item();
-let addItem = newToDo.newItem('get groceries', '08/13/21', 'groceries', 'get milk, and eggs', 'true');
-let addAnotherItem = newToDo.newItem('clean room', '08/14/21', 'housework', 'room is dirty, clean it!', 'false');
-let addAnotherTestItem = newToDo.newItem('test', 'test', 'test', 'test');
-
-newToDo.ToDoList.push(addItem, addAnotherItem);
 
 window.addEventListener("load", taskFactory.newItemForm().appendFilledItemForm(JSON.parse(window.localStorage.getItem('ToDo_List'))));
 
